@@ -2,13 +2,15 @@
 // 父布局组件：侧边菜单 + 内容区（响应式）
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const menuOpen = ref(false) // 手机端菜单开关
 
-// 退出登录：清除 token 并跳回登录页
+// 退出登录：调用 store 清空状态后跳回登录页
 function logout() {
-  localStorage.removeItem('library_token')
+  userStore.logout()
   router.push('/login')
 }
 
@@ -31,6 +33,7 @@ function closeMenu() {
     <!-- 侧边菜单 -->
     <aside class="sidebar" :class="{ open: menuOpen }">
       <h2 class="title title-desktop">📚 图书系统</h2>
+      <div class="user-info">👤 {{ userStore.username }}</div>
       <nav>
         <RouterLink to="/books" @click="closeMenu">图书列表</RouterLink>
         <RouterLink to="/borrow" @click="closeMenu">借阅记录</RouterLink>
@@ -72,6 +75,15 @@ function closeMenu() {
   margin: 0;
   font-size: 18px;
   letter-spacing: 1px;
+}
+
+.user-info {
+  padding: 10px 14px;
+  margin-top: -12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 14px;
+  color: #fff;
 }
 
 .sidebar nav {

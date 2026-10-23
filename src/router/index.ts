@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 // 静态路由表：登录页 + 父布局(嵌套子路由)
 const routes: RouteRecordRaw[] = [
@@ -53,14 +54,14 @@ const router = createRouter({
 
 // 全局前置守卫：做登录鉴权
 router.beforeEach((to) => {
-  const token = localStorage.getItem('library_token')
+  const userStore = useUserStore()
 
-  // 页面标记了 requiresAuth 且没有 token → 跳到登录页
-  if (to.meta.requiresAuth && !token) {
+  // 页面标记了 requiresAuth 且未登录 → 跳到登录页
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     return { path: '/login' }
   }
   // 已登录用户访问登录页 → 跳到首页
-  if (to.path === '/login' && token) {
+  if (to.path === '/login' && userStore.isLoggedIn) {
     return { path: '/books' }
   }
   return true
