@@ -15,4 +15,16 @@ pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 app.use(router)
 
-app.mount('#app')
+// 暂时关闭 MSW mock（如需恢复，将下方开关改回 true 即可）
+const USE_MOCK = true
+
+async function enableMocking() {
+  if (USE_MOCK && import.meta.env.DEV) {
+    const { worker } = await import('./mock/browser')
+    await worker.start()
+  }
+}
+
+enableMocking().then(() => {
+  app.mount('#app')
+})

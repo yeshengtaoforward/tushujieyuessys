@@ -3,16 +3,27 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { login as loginApi } from '@/api/auth'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const username = ref('')
+const loading = ref(false)
 
-// 点击登录：调用 store 的 login 写入状态后跳转图书列表
-function handleLogin() {
-  userStore.login(username.value || '未命名用户')
-  router.push('/books')
+// 点击登录：调用登录接口，成功后写入 store 并跳转
+async function handleLogin() {
+  if (!username.value || loading.value) return
+  loading.value = true
+  try {
+    // 拦截器已在 code===200 时返回 data（含 token/userInfo）
+    const data = await loginApi(username.value)
+    userStore.token = data.token
+    userStore.userInfo = data.userInfo
+    router.push('/books')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -28,7 +39,9 @@ function handleLogin() {
         placeholder="请输入用户名"
         @keyup.enter="handleLogin"
       />
-      <button class="login-btn" @click="handleLogin">登录</button>
+      <button class="login-btn" :disabled="loading" @click="handleLogin">
+        {{ loading ? '登录中...' : '登录' }}
+      </button>
     </div>
   </div>
 </template>
